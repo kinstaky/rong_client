@@ -15,6 +15,8 @@ class Pixie16DeviceModel extends DeviceModel {
     required super.address,
     required super.port,
     super.type = DeviceType.pixie16,
+    required super.group,
+    required super.index,
   }) {
     init();
   }

@@ -17,7 +17,7 @@ enum ScalerMode {
 enum ScalerLiveMode {
   mode2m, mode20m, mode2h, mode24h,
 }
-const scalerLiveModeAvg = [
+const List<int> scalerLiveModeAvg = <int>[
   1, 10, 60, 720,
 ];
 
@@ -84,6 +84,8 @@ class MztioDeviceModel extends DeviceModel {
     required super.address,
     required super.port,
     super.type = DeviceType.mztio,
+    required super.group,
+    required super.index,
     this.scalerNames
   }) {
     errorConnect = 0;
@@ -143,6 +145,7 @@ class MztioDeviceModel extends DeviceModel {
     );
     await getConfig();
     await loadScalerNames();
+		await loadRun();
   }
 
   @override
@@ -151,7 +154,7 @@ class MztioDeviceModel extends DeviceModel {
     try {
       final Request request = Request(type: 0);
       final response = await stub.getState(request);
-      state = response.value == 1 ? 3 : 1;
+      state = response.value;
       errorConnect = 0;
     } catch (e) {
       print("Caught error: $e");
@@ -249,11 +252,11 @@ class MztioDeviceModel extends DeviceModel {
           }
         }
       }
-      state = 3;
     } catch (e) {
-      print("Caught error: $e");
       state = 0;
+      print("Caught error: $e");
     }
+    await refreshState();
   }
 
   Future<void> getVisualScaler({DateTime? date}) async {
@@ -389,5 +392,49 @@ class MztioDeviceModel extends DeviceModel {
         length: 0,
       );
     }
+  }
+
+
+  @override
+  Future<void> changeRun(int newRun) async {
+    print("MZTIO change run");
+		try {
+			final Action action = Action(
+				type: 2,
+				option: newRun
+			);
+			final reply = await stub.runControl(action);
+			if (reply.value == newRun) {
+				run = newRun;
+			}
+		} catch (e) {
+			print("Caught error: $e");
+		}
+  }
+
+
+  Future<void> loadRun() async {
+		try {
+			final Action action = Action(type: 0);
+			final reply = await stub.runControl(action);
+			run = reply.value;
+		} catch (e) {
+			print("Caught error: $e");
+		}
+  }
+
+
+  @override
+  Future<void> startRun() async {
+    print("MZTIO start run, state $state");
+		try {
+			final Action action = Action(type:1);
+			final reply = await stub.runControl(action);
+      state = reply.value == 0 ? 3 : 2;
+			await loadRun();
+    print("MZTIO after start, state $state");
+		} catch (e) {
+			print("Caught error: $e");
+		}
   }
 }

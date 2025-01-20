@@ -5,6 +5,8 @@
 	"refreshTooltip": "刷新",
 	"editDeviceTooltip": "编辑",
 	"delete": "删除",
+	"startNewRun": "开始下一个 run",
+	"stopRun": "停止当前 run",
 
 	"newDeviceTitle": "新设备",
 	"editDeviceTitle": "修改设备",

@@ -21,6 +21,8 @@ abstract class DeviceModel {
     required this.address,
     required this.port,
     required this.type,
+    required this.group,
+    required this.index,
   });
 
 
@@ -29,15 +31,12 @@ abstract class DeviceModel {
     address = other.address;
     port = other.port;
     type = other.type;
+    group = other.group;
+    state = other.state;
+    run = other.run;
+    running = other.running;
   }
 
-
-  Map<String, dynamic> toJson() => {
-		'name': name,
-		'address': address,
-    'port': port,
-    'type': deviceTypeName[type]!,
-	};
 
   // device name
   String name = "";
@@ -47,15 +46,31 @@ abstract class DeviceModel {
   String port = "";
   // device type
   DeviceType type = DeviceType.other;
+  // device group
+  int group = 0;
+  // index in group
+  int index = 0;
   // device state
   int state = 0;
   // connection error times
   int errorConnect = 0;
+  // run
+  int run = 0;
+  // run status
+  bool running = false;
 
 
   Future<void> init();
 
   Future<void> refreshState();
+
+  Future<void> changeRun(int newRun) async {
+    run = newRun;
+  }
+
+  Future<void> startRun() async {
+    running = !running;
+  }
 }
 
 
@@ -65,16 +80,9 @@ class DefaultDeviceModel extends DeviceModel {
     required super.address,
     required super.port,
     super.type = DeviceType.other,
+    super.group = 0,
+    super.index = 0,
   });
-
-  DefaultDeviceModel.fromJson(Map<String, dynamic> json)
-		: super(
-			name: json['name'] as String,
-			address: json['address'] as String,
-      port: json['port'] as String,
-      type: deviceNameType[json['type'] as String]!,
-		);
-
 
   @override
   Future<void> init() async {}

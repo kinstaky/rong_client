@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:collection/collection.dart';
@@ -254,6 +255,7 @@ class _ConfigTabState extends State<ConfigTab> {
   _ConfigTabState();
 
   late final TextEditingController textController;
+	late final TextEditingController runTextController;
 
   bool validParseResult(ParseResult result) {
     if (result.status == 201 || result.status == 208 || result.status == 300) {
@@ -269,6 +271,9 @@ class _ConfigTabState extends State<ConfigTab> {
     textController = TextEditingController(
       text: widget.device.expressions.join("\n"),
     );
+		runTextController = TextEditingController(
+			text: "${widget.device.run}",
+		);
   }
 
   @override
@@ -338,42 +343,42 @@ class _ConfigTabState extends State<ConfigTab> {
                           behavior: SnackBarBehavior.floating,
                           width: 800,
                           content: RichText(
-                              text: TextSpan(
-                                text: result.message(),
-                                style: textStyle.copyWith(
-                                  color: context.mounted
-                                    ? Theme.of(context).colorScheme.surface
-                                    : Colors.black,
-                                ),
-                                children: <TextSpan>[
-                                  TextSpan(
-                                    text: validParseResult(result)
-                                      ? expressions[result.index].substring(
-                                        0,
-                                        result.position
-                                      )
-                                      : "",
-                                  ),
-                                  TextSpan(
-                                    text: validParseResult(result)
-                                      ? expressions[result.index].substring(
-                                        result.position,
-                                        result.position + result.length
-                                      )
-                                      : "",
-                                    style: textStyle.copyWith(
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: validParseResult(result)
-                                      ? expressions[result.index].substring(
-                                        result.position + result.length,
-                                        expressions[result.index].length
-                                      )
-                                      : "",
-                                  ),
-                                ],
+														text: TextSpan(
+															text: result.message(),
+															style: textStyle.copyWith(
+																color: context.mounted
+																	? Theme.of(context).colorScheme.surface
+																	: Colors.black,
+															),
+															children: <TextSpan>[
+																TextSpan(
+																	text: validParseResult(result)
+																		? expressions[result.index].substring(
+																			0,
+																			result.position
+																		)
+																		: "",
+																),
+																TextSpan(
+																	text: validParseResult(result)
+																		? expressions[result.index].substring(
+																			result.position,
+																			result.position + result.length
+																		)
+																		: "",
+																	style: textStyle.copyWith(
+																		color: Colors.red,
+																	),
+																),
+																TextSpan(
+																	text: validParseResult(result)
+																		? expressions[result.index].substring(
+																			result.position + result.length,
+																			expressions[result.index].length
+																		)
+																		: "",
+																),
+															],
                             ),
                           ),
                           duration: const Duration(seconds: 5),
@@ -400,24 +405,95 @@ class _ConfigTabState extends State<ConfigTab> {
               padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 5.0),
               child: Text(
                 "${AppLocalizations.of(context)!.lastConfigHint}"
-				"${widget.device.configTime.toString().substring(0, 19)}",
+								"${widget.device.configTime.toString().substring(0, 19)}",
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 0.0,
-                horizontal: 20.0,
+              padding: const EdgeInsets.fromLTRB(
+                20.0, 0.0, 20.0, 15.0
               ),
               child: TextField(
                 controller: textController,
                 keyboardType: TextInputType.multiline,
-                maxLines: null,
+                maxLines: 15,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
+            Divider(),
+						Padding(
+							padding: const EdgeInsets.symmetric(
+								vertical: 15.0,
+								horizontal: 20.0,
+							),
+							child: Row(
+								spacing: 20,
+								children: [
+									Text(
+										"Run",
+										style: Theme.of(context).textTheme.titleLarge!,
+									),
+									SizedBox(
+										width: 80,
+										child: TextField(
+											controller: runTextController,
+											keyboardType: TextInputType.number,
+											inputFormatters: [
+												FilteringTextInputFormatter.digitsOnly,
+											],
+											decoration: const InputDecoration(
+												border: OutlineInputBorder(),
+											),
+										),
+									),
+                  OutlinedButton(
+                    onPressed: () async {
+                      await widget.device.loadRun();
+											runTextController.text = "${widget.device.run}";
+                    },
+                    style: buttonStyle,
+					          child: Text(AppLocalizations.of(context)!.load),
+                  ),
+                  OutlinedButton(
+                    onPressed: (){
+											runTextController.text = "";
+                    },
+                    style: buttonStyle,
+                    child: Text(AppLocalizations.of(context)!.clear),
+                  ),
+                  FilledButton(
+                    onPressed: () async {
+                      final expectRun = runTextController.text.isEmpty
+													? 0
+													: int.parse(runTextController.text);
+											await widget.device.changeRun(expectRun);
+                      if (widget.device.run != expectRun) {
+                        final snackBar = SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          width: 800,
+                          content: const Text("Change run number failed."),
+                          duration: const Duration(seconds: 3),
+                          action: SnackBarAction(
+                            label: context.mounted
+                              ? AppLocalizations.of(context)!.close
+                              : "Close",
+                            onPressed: () {},
+                          ),
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        }
+                      }
+                    },
+                    style: buttonStyle,
+                    child: Text(AppLocalizations.of(context)!.save),
+                  ),
+								],
+							),
+						)
           ],
         ),
       ),
@@ -550,9 +626,9 @@ class _LiveModeSelectorState extends State<LiveModeSelector> {
   Widget build(BuildContext context) {
 	var localScalerLiveModeName = [
 		AppLocalizations.of(context)!.liveModeName2m,
-        AppLocalizations.of(context)!.liveModeName20m,
-        AppLocalizations.of(context)!.liveModeName2h,
-        AppLocalizations.of(context)!.liveModeName24h,
+    AppLocalizations.of(context)!.liveModeName20m,
+    AppLocalizations.of(context)!.liveModeName2h,
+    AppLocalizations.of(context)!.liveModeName24h,
 	];
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),

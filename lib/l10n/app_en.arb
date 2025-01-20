@@ -17,6 +17,14 @@
 	"@delete": {
 		"description": "Action for removing something."
 	},
+	"startNewRun": "Start new run",
+	"@startNewRun": {
+		"description": "Action for starting a new run."
+	},
+	"stopRun": "Stop run",
+	"@stopRun": {
+		"description": "Action for stopping current run."
+	},
 
 	"newDeviceTitle": "New device",
 	"@newDeviceTitle": {

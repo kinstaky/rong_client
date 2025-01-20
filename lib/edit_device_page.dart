@@ -150,6 +150,7 @@ class _EditDevicePageState extends State<EditDevicePage> {
                   address: textController["ip"]!.text,
                   port: textController["port"]!.text,
                   type: selectedType ?? DeviceType.other,
+                  group: 0
                 ));
               },
               child: Text(AppLocalizations.of(context)!.save),

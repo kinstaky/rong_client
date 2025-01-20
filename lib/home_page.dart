@@ -49,13 +49,44 @@ class HomePage extends StatelessWidget {
 
     return Stack(
       alignment: Alignment.bottomRight,
-      children: [
+      children: <Widget>[
         ListView(
-          children: <Widget> [
-            for (var dev in deviceManager.devices.values)
-              DeviceEntry(
-                changePage: changePage,
-                device: dev
+          children: [
+            for (var group in deviceManager.groups)
+              Card(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: FilledButton(
+                        onPressed: () async {
+                          await group.startRun();
+                          deviceManager.notifyManual();
+                        },
+                        style: FilledButton.styleFrom(
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(10),
+                            )
+                          ),
+                          foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                          backgroundColor: Theme.of(context).colorScheme.secondary,
+                        ),
+                        child: Text(
+                          group.running
+                            ? AppLocalizations.of(context)!.stopRun
+                            : AppLocalizations.of(context)!.startNewRun,
+                        ),
+                      ),
+                    ),
+                    for (var device in group.devices)
+                      DeviceEntry(
+                        changePage: changePage,
+                        device: device
+                      ),
+                  ],
+                ),
               )
           ],
         ),
@@ -131,13 +162,42 @@ class DeviceEntry extends StatelessWidget {
         Icons.circle,
         color: statusColor[device.state],
       ),
-      title: Text(
-        device.name,
-        style: theme.textTheme.headlineSmall,
-      ),
-      subtitle: Text(
-        "${device.address}:${device.port}",
-        style: theme.textTheme.titleLarge,
+      title: Row(
+        children: [
+          SizedBox(
+            width: 270,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  device.name,
+                  style: theme.textTheme.headlineMedium,
+                ),
+                Text(
+                    "${device.type == DeviceType.mztio ? 'MZTIO' : 'Pixie16'}"
+                    "  ${device.address}:${device.port}",
+                    style: theme.textTheme.titleMedium!.copyWith(
+                    fontSize: 18.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+					Padding(
+						padding: const EdgeInsets.symmetric(
+							vertical: 0.0,
+							horizontal: 50.0,
+						),
+						child: SizedBox(
+              width: 100,
+              child: Text(
+                "Run ${device.run}",
+                style: Theme.of(context).textTheme.headlineSmall!,
+              ),
+            ),
+					),
+          GroupSelector(device: device),
+        ],
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -172,7 +232,63 @@ class DeviceEntry extends StatelessWidget {
         var deviceManager = context.read<DeviceManagerModel>();
         deviceManager.selectedDevice = device.name;
         changePage(1);
-      }
+      },
+      enabled: device.state != 0,
+    );
+  }
+}
+
+class GroupSelector extends StatelessWidget {
+  const GroupSelector({
+    super.key,
+    required this.device,
+  });
+
+  final DeviceModel device;
+
+  @override
+  Widget build(BuildContext context) {
+    return MenuAnchor(
+      builder: (context, controller, child) {
+        return OutlinedButton(
+          onPressed: (){
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+          style: OutlinedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5),
+            ),
+          ),
+          child: Text("Group ${device.group}"),
+        );
+      },
+      menuChildren: [
+        for (
+          var i = 0;
+          i < context.read<DeviceManagerModel>().groups.length;
+          ++i
+        )
+          MenuItemButton(
+            onPressed: () {
+              var deviceManager = context.read<DeviceManagerModel>();
+              deviceManager.changeDeviceGroup(device.name, i);
+              deviceManager.notifyManual();
+            },
+            child: Text("Group $i"),
+          ),
+        MenuItemButton(
+          onPressed: () {
+            var deviceManager = context.read<DeviceManagerModel>();
+            deviceManager.changeDeviceGroup(device.name, -1);
+            deviceManager.notifyManual();
+          },
+          child: Text("New Group"),
+        )
+      ],
     );
   }
 }
