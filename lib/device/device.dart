@@ -68,6 +68,8 @@ abstract class DeviceModel {
     run = newRun;
   }
 
+  Future<void> loadRun() async {}
+
   Future<void> startRun() async {
     running = !running;
   }

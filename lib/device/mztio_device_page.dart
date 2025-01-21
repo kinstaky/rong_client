@@ -493,7 +493,7 @@ class _ConfigTabState extends State<ConfigTab> {
                   ),
 								],
 							),
-						)
+						),
           ],
         ),
       ),

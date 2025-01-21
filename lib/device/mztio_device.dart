@@ -157,7 +157,7 @@ class MztioDeviceModel extends DeviceModel {
       state = response.value;
       errorConnect = 0;
     } catch (e) {
-      print("Caught error: $e");
+      // print("Caught error: $e");
       ++errorConnect;
       state = 0;
     }
@@ -254,7 +254,7 @@ class MztioDeviceModel extends DeviceModel {
       }
     } catch (e) {
       state = 0;
-      print("Caught error: $e");
+      // print("Caught error: $e");
     }
     await refreshState();
   }
@@ -298,7 +298,7 @@ class MztioDeviceModel extends DeviceModel {
       }
       avgNumber = 0;
     } catch (e) {
-      print("Caught error: $e");
+      // print("Caught error: $e");
     }
   }
 
@@ -328,10 +328,10 @@ class MztioDeviceModel extends DeviceModel {
           rangeIndex = 0;
         }
       }
-    } on GrpcError catch (e) {
-      print ("Caught error: $e");
+    // } on GrpcError catch (e) {
+    //   // print ("Caught error: $e");
     } catch (e) {
-      print("Caught error: $e");
+      // print("Caught error: $e");
     }
   }
 
@@ -341,7 +341,7 @@ class MztioDeviceModel extends DeviceModel {
       final response = await stub.getState(request);
       if (response.value != 3) return;
     } catch (e) {
-      print("Caught error: $e");
+      // print("Caught error: $e");
       return;
     }
 
@@ -354,7 +354,7 @@ class MztioDeviceModel extends DeviceModel {
       configTime = DateTime.parse(newExpressions.first);
       expressions = newExpressions.sublist(1);
     } catch (e) {
-      print("Caught error: $e");
+      // print("Caught error: $e");
     }
   }
 
@@ -384,7 +384,7 @@ class MztioDeviceModel extends DeviceModel {
         length: result.length,
       );
     } catch (e) {
-      print("Caught error: $e");
+      // print("Caught error: $e");
       return ParseResult(
         index: -1,
         status: 400,
@@ -397,7 +397,6 @@ class MztioDeviceModel extends DeviceModel {
 
   @override
   Future<void> changeRun(int newRun) async {
-    print("MZTIO change run");
 		try {
 			final Action action = Action(
 				type: 2,
@@ -408,33 +407,32 @@ class MztioDeviceModel extends DeviceModel {
 				run = newRun;
 			}
 		} catch (e) {
-			print("Caught error: $e");
+			// print("Caught error: $e");
 		}
   }
 
 
+  @override
   Future<void> loadRun() async {
 		try {
 			final Action action = Action(type: 0);
 			final reply = await stub.runControl(action);
 			run = reply.value;
 		} catch (e) {
-			print("Caught error: $e");
+			// print("Caught error: $e");
 		}
   }
 
 
   @override
   Future<void> startRun() async {
-    print("MZTIO start run, state $state");
 		try {
 			final Action action = Action(type:1);
 			final reply = await stub.runControl(action);
       state = reply.value == 0 ? 3 : 2;
 			await loadRun();
-    print("MZTIO after start, state $state");
 		} catch (e) {
-			print("Caught error: $e");
+			// print("Caught error: $e");
 		}
   }
 }

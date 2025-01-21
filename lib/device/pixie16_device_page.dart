@@ -60,86 +60,71 @@ class _Pixie16DevicePageState extends State<Pixie16DevicePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: 10,
-          horizontal: 5,
+          vertical: 15.0,
+          horizontal: 20.0,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          spacing: 20,
           children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 5,
-                    horizontal: 20,
-                  ),
-                  child: OutlinedButton(
-                    onPressed: () {
-											runTextController.text = "${widget.device.run}";
-                    },
-                    style: buttonStyle,
-					          child: Text(AppLocalizations.of(context)!.load),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 5,
-                    horizontal: 0,
-                  ),
-                  child: OutlinedButton(
-                    onPressed: (){
-											runTextController.text = "";
-                    },
-                    style: buttonStyle,
-                    child: Text(AppLocalizations.of(context)!.clear),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 5,
-                    horizontal: 20,
-                  ),
-                  child: FilledButton(
-                    onPressed: () {
-											widget.device.changeRun(
-												runTextController.text.isEmpty
-													? 0
-													: int.parse(runTextController.text)
-											);
-                    },
-                    style: buttonStyle,
-                    child: Text(AppLocalizations.of(context)!.save),
-                  ),
-                ),
-              ],
+            Text(
+              "Run",
+              style: Theme.of(context).textTheme.titleLarge!,
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 30.0,
-                horizontal: 20.0,
-              ),
-              child: Row(
-                spacing: 20,
-                children: [
-                  Text(
-                    "Run",
-                    style: Theme.of(context).textTheme.titleLarge!,
-                  ),
-                  SizedBox(
-                    width: 80,
-                    child: TextField(
-                      controller: runTextController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder()
-                      ),
-                    ),
-                  )
+            SizedBox(
+              width: 80,
+              child: TextField(
+                controller: runTextController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
                 ],
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
               ),
+            ),
+            OutlinedButton(
+              onPressed: () async {
+                await widget.device.loadRun();
+                runTextController.text = "${widget.device.run}";
+              },
+              style: buttonStyle,
+              child: Text(AppLocalizations.of(context)!.load),
+            ),
+            OutlinedButton(
+              onPressed: (){
+                runTextController.text = "";
+              },
+              style: buttonStyle,
+              child: Text(AppLocalizations.of(context)!.clear),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final expectRun = runTextController.text.isEmpty
+                    ? 0
+                    : int.parse(runTextController.text);
+                await widget.device.changeRun(expectRun);
+                if (widget.device.run != expectRun) {
+                  final snackBar = SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    width: 800,
+                    content: const Text("Change run number failed."),
+                    duration: const Duration(seconds: 3),
+                    action: SnackBarAction(
+                      label: context.mounted
+                        ? AppLocalizations.of(context)!.close
+                        : "Close",
+                      onPressed: () {},
+                    ),
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  }
+                }
+              },
+              style: buttonStyle,
+              child: Text(AppLocalizations.of(context)!.save),
             ),
           ],
         ),
