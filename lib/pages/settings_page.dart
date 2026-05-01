@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:rong_client/settings.dart';
-
+import '../manager/settings.dart';
+import '../l10n/app_localizations.dart';
 
 enum ColorSeed {
 	pink("Pink", Color(0xFFFCD6D8), 0xFFFCD6D8),

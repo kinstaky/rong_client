@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:rong_client/settings.dart';
-import 'package:rong_client/home_page.dart';
-import 'package:rong_client/settings_page.dart';
-import 'package:rong_client/device/device.dart';
-import 'package:rong_client/device/mztio_device.dart';
-import 'package:rong_client/device/device_manager.dart';
-import 'package:rong_client/device/mztio_device_page.dart';
+import 'l10n/app_localizations.dart';
 
-// final lineColors = [];
-final deviceManager = DeviceManagerModel();
-final settingsModel = SettingsModel();
+import 'manager/app_manager.dart';
+import 'manager/settings.dart';
+import 'pages/home_page.dart';
+import 'pages/mztio_service_page.dart';
+import 'pages/settings_page.dart';
+import 'service/service.dart';
+import 'service/mztio_service.dart';
+
+final manager = AppManager();
 
 void main() async {
-  await deviceManager.init();
-  await settingsModel.init();
+  await manager.load();
   runApp(const Client());
 }
 
@@ -28,8 +26,8 @@ class Client extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => deviceManager),
-        ChangeNotifierProvider(create: (context) => settingsModel),
+        ChangeNotifierProvider(create: (context) => manager),
+        ChangeNotifierProvider(create: (context) => manager.settings),
       ],
       builder: (context, child) {
         return MaterialApp(
@@ -73,7 +71,7 @@ class ClientPage extends StatefulWidget {
 class _ClientPageState extends State<ClientPage> {
   var selectedPageIndex = 0;
 
-  void changePage(value) {
+  void changePage(int value) {
     setState(() {
       selectedPageIndex = value;
     });
@@ -90,16 +88,17 @@ class _ClientPageState extends State<ClientPage> {
         );
         break;
       case 1:
-        var deviceManager = context.watch<DeviceManagerModel>();
-        var device = deviceManager.devices[deviceManager.selectedDevice];
-        if (device == null) {
+        var manager = context.watch<AppManager>();
+        var profile = manager.profiles[manager.currentProfile];
+        var service = profile.services[profile.selectedService];
+        if (service == null) {
           page = const Scaffold();
-        } else if (device.type == DeviceType.mztio) {
-          page = MztioDevicePage(
+        } else if (service.type == ServiceType.mztio) {
+          page = MztioServicePage(
             changePage: changePage,
-            device: device as MztioDeviceModel,
+            service: service as MztioServiceModel,
           );
-        } else if (device.type == DeviceType.pixie16) {
+        } else if (service.type == ServiceType.pixie16) {
           page = const Placeholder();
         } else {
           page = const Scaffold();
@@ -139,7 +138,7 @@ class _ClientPageState extends State<ClientPage> {
                     Icons.dns,
                     size: 48,
                   ),
-                  label: Text('Device'),
+                  label: Text('Service'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(

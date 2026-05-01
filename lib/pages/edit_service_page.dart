@@ -1,37 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:rong_client/device/device.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../service/service.dart';
+import '../l10n/app_localizations.dart';
 
 
-class EditDevicePage extends StatefulWidget {
-  const EditDevicePage({
+class EditServicePage extends StatefulWidget {
+  const EditServicePage({
     super.key,
-    this.device,
+    this.service,
   });
 
-  final DeviceModel? device;
+  final Map<String, dynamic>? service;
 
   @override
-  State<EditDevicePage> createState() => _EditDevicePageState();
+  State<EditServicePage> createState() => _EditServicePageState();
 }
 
-class _EditDevicePageState extends State<EditDevicePage> {
+class _EditServicePageState extends State<EditServicePage> {
 
-  _EditDevicePageState();
+  _EditServicePageState();
 
-  DeviceType? selectedType = DeviceType.mztio;
+  ServiceType? selectedType = ServiceType.mztio;
 
   @override
   void initState() {
     super.initState();
     textController["name"] = TextEditingController(
-      text: widget.device?.name,
+      text: widget.service?["name"],
     );
     textController["ip"] = TextEditingController(
-      text: widget.device?.address,
+      text: widget.service?["ip"],
     );
     textController["port"] = TextEditingController(
-      text: widget.device?.port,
+      text: widget.service?["port"],
     );
   }
 
@@ -50,18 +50,18 @@ class _EditDevicePageState extends State<EditDevicePage> {
   @override
   Widget build(BuildContext context) {
     final localNames = {
-      "type": AppLocalizations.of(context)!.deviceType,
+      "type": AppLocalizations.of(context)!.serviceType,
       "name": AppLocalizations.of(context)!.name,
       "ip": AppLocalizations.of(context)!.ip,
       "port": AppLocalizations.of(context)!.port,
     };
-    final hintPrefix = AppLocalizations.of(context)!.deviceInputHintPrefix;
+    final hintPrefix = AppLocalizations.of(context)!.serviceInputHintPrefix;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.device == null
-            ? AppLocalizations.of(context)!.newDeviceTitle
-            : AppLocalizations.of(context)!.editDeviceTitle,
+          widget.service == null
+            ? AppLocalizations.of(context)!.newServiceTitle
+            : AppLocalizations.of(context)!.editServiceTitle,
         ),
       ),
       body: Column(
@@ -72,43 +72,39 @@ class _EditDevicePageState extends State<EditDevicePage> {
               horizontal: 50,
               vertical: 10,
             ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
+            child: RadioGroup<ServiceType>(
+              groupValue: selectedType,
+              onChanged: (ServiceType? value) {
+                setState(() {
+                  selectedType = value;
+                });
+              },
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                    ),
+                    width: 130,
+                    child: Text(localNames["type"]!),
                   ),
-                  width: 100,
-                  child: Text(localNames["type"]!),
-                ),
-                SizedBox(
-                  width: 160,
-                  child: RadioListTile<DeviceType>(
-                    title: const Text("MZTIO"),
-                    value: DeviceType.mztio,
-                    groupValue: selectedType,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedType = value;
-                      });
-                    },
+                  SizedBox(
+                    width: 200,
+                    child: const ListTile(
+                      title: Text("MZTIO"),
+                      leading: Radio(value: ServiceType.mztio),
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: 160,
-                  child: RadioListTile<DeviceType>(
-                    title: const Text("Pixie16"),
-                    value: DeviceType.pixie16,
-                    groupValue: selectedType,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedType = value;
-                      });
-                    },
+                  SizedBox(
+                    width: 200,
+                    child: const ListTile(
+                      title: Text("Pixie16"),
+                      leading: Radio(value: ServiceType.pixie16),
+                    ),
                   ),
-                ),
-              ],
-            )
+                ],
+              )
+            ),
           ),
           for (var name in textFieldName)
             Padding(
@@ -122,7 +118,7 @@ class _EditDevicePageState extends State<EditDevicePage> {
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                     ),
-                    width: 100,
+                    width: 130,
                     child: Text(localNames[name]!),
                   ),
                   SizedBox(
@@ -145,13 +141,12 @@ class _EditDevicePageState extends State<EditDevicePage> {
             ),
             child: FilledButton(
               onPressed: () {
-                Navigator.pop(context, DefaultDeviceModel(
-                  name: textController["name"]!.text,
-                  address: textController["ip"]!.text,
-                  port: textController["port"]!.text,
-                  type: selectedType ?? DeviceType.other,
-                  group: 0
-                ));
+                Navigator.pop(context, {
+                  "name": textController["name"]!.text,
+                  "ip": textController["ip"]!.text,
+                  "port": textController["port"]!.text,
+                  "type": selectedType ?? ServiceType.other,
+                });
               },
               child: Text(AppLocalizations.of(context)!.save),
             ),

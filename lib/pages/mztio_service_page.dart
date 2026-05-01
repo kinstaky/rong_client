@@ -1,11 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:collection/collection.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-import 'package:rong_client/device/mztio_device.dart';
+import '../service/mztio_service.dart';
+import '../l10n/app_localizations.dart';
 
 const List<Color> defaultLineColors = [
   Color(0xFF6E44FF),
@@ -43,16 +42,16 @@ const List<Color> defaultLineColors = [
 ];
 
 
-class MztioDevicePage extends StatelessWidget {
+class MztioServicePage extends StatelessWidget {
 
-  const MztioDevicePage({
+  const MztioServicePage({
     super.key,
     required this.changePage,
-    required this.device,
+    required this.service,
   });
 
   final Function changePage;
-  final MztioDeviceModel device;
+  final MztioServiceModel service;
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +69,9 @@ class MztioDevicePage extends StatelessWidget {
                 margin: const EdgeInsetsDirectional.symmetric(
                   horizontal: 10,
                 ),
-                child: Text(device.name)
+                child: Text(service.name)
               ),
-              Text("${device.address}:${device.port}"),
+              Text("${service.ip}:${service.port}"),
             ],
           ),
           bottom: TabBar(
@@ -88,11 +87,11 @@ class MztioDevicePage extends StatelessWidget {
             SingleChildScrollView(
               child: ScalerTab(
                 restorationId: "scaler_tab",
-                device: device,
+                service: service,
               ),
             ),
-            ConfigTab(device: device),
-            ScalerNamesTab(device: device),
+            ConfigTab(service: service),
+            ScalerNamesTab(service: service),
           ],
         ),
       ),
@@ -103,10 +102,10 @@ class MztioDevicePage extends StatelessWidget {
 class ScalerNamesTab extends StatefulWidget {
   const ScalerNamesTab({
     super.key,
-    required this.device,
+    required this.service,
   });
 
-  final MztioDeviceModel device;
+  final MztioServiceModel service;
 
   @override
   State<ScalerNamesTab> createState() => _ScalerNamesTabState();
@@ -128,9 +127,9 @@ class _ScalerNamesTabState extends State<ScalerNamesTab> {
   void initState() {
     super.initState();
     textControllers = List.generate(
-      widget.device.scalerNames!.length,
+      widget.service.scalerNames.length,
       (index) => TextEditingController(
-        text: widget.device.scalerNames![index],
+        text: widget.service.scalerNames[index],
       ),
     );
   }
@@ -156,8 +155,8 @@ class _ScalerNamesTabState extends State<ScalerNamesTab> {
                   ),
                   child: OutlinedButton(
                     onPressed: () {
-                      for (var i = 0; i < widget.device.scalerNames!.length; i++) {
-                        textControllers[i].text = widget.device.scalerNames![i];
+                      for (var i = 0; i < widget.service.scalerNames.length; i++) {
+                        textControllers[i].text = widget.service.scalerNames[i];
                       }
                     },
                     style: buttonStyle,
@@ -171,7 +170,7 @@ class _ScalerNamesTabState extends State<ScalerNamesTab> {
                   ),
                   child: OutlinedButton(
                     onPressed: (){
-                      for (var i = 0; i < widget.device.scalerNames!.length; i++) {
+                      for (var i = 0; i < widget.service.scalerNames.length; i++) {
                         textControllers[i].text = "$i";
                       }
                     },
@@ -186,10 +185,10 @@ class _ScalerNamesTabState extends State<ScalerNamesTab> {
                   ),
                   child: FilledButton(
                     onPressed: () {
-                      for (var i = 0; i < widget.device.scalerNames!.length; ++i) {
-                        widget.device.scalerNames![i] = textControllers[i].text;
+                      for (var i = 0; i < widget.service.scalerNames.length; ++i) {
+                        widget.service.scalerNames[i] = textControllers[i].text;
                       }
-                      widget.device.saveScalerNames();
+                      widget.service.saveScalerNames();
                     },
                     style: buttonStyle,
                     child: Text(AppLocalizations.of(context)!.save),
@@ -204,7 +203,7 @@ class _ScalerNamesTabState extends State<ScalerNamesTab> {
               child: Wrap(
                 spacing: 10,
                 runSpacing: 10,
-                children: widget.device.scalerNames!.mapIndexed(
+                children: widget.service.scalerNames.mapIndexed(
                   (index, value) => SizedBox(
                     width: 132,
                     child: Row(
@@ -241,10 +240,10 @@ class _ScalerNamesTabState extends State<ScalerNamesTab> {
 class ConfigTab extends StatefulWidget {
   const ConfigTab({
     super.key,
-    required this.device,
+    required this.service,
   });
 
-  final MztioDeviceModel device;
+  final MztioServiceModel service;
 
   @override
   State<ConfigTab> createState() => _ConfigTabState();
@@ -269,10 +268,10 @@ class _ConfigTabState extends State<ConfigTab> {
   void initState() {
     super.initState();
     textController = TextEditingController(
-      text: widget.device.expressions.join("\n"),
+      text: widget.service.expressions.join("\n"),
     );
 		runTextController = TextEditingController(
-			text: "${widget.device.run}",
+			text: "${widget.service.run}",
 		);
   }
 
@@ -307,9 +306,9 @@ class _ConfigTabState extends State<ConfigTab> {
                   ),
                   child: OutlinedButton(
                     onPressed: () async {
-                      await widget.device.getConfig();
+                      await widget.service.getConfig();
                       textController.text =
-                        widget.device.expressions.join("\n");
+                        widget.service.expressions.join("\n");
                     },
                     style: buttonStyle,
 					          child: Text(AppLocalizations.of(context)!.load),
@@ -336,8 +335,8 @@ class _ConfigTabState extends State<ConfigTab> {
                   child: FilledButton(
                     onPressed: () async {
                       var expressions = textController.text.split("\n");
-                      widget.device.expressions = expressions;
-                      var result = await widget.device.setConfig();
+                      widget.service.expressions = expressions;
+                      var result = await widget.service.setConfig();
                       if (result.status != 0) {
                         final snackBar = SnackBar(
                           behavior: SnackBarBehavior.floating,
@@ -405,7 +404,7 @@ class _ConfigTabState extends State<ConfigTab> {
               padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 5.0),
               child: Text(
                 "${AppLocalizations.of(context)!.lastConfigHint}"
-								"${widget.device.configTime.toString().substring(0, 19)}",
+								"${widget.service.configTime.toString().substring(0, 19)}",
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
@@ -450,8 +449,8 @@ class _ConfigTabState extends State<ConfigTab> {
 									),
                   OutlinedButton(
                     onPressed: () async {
-                      await widget.device.loadRun();
-											runTextController.text = "${widget.device.run}";
+                      await widget.service.loadRun();
+											runTextController.text = "${widget.service.run}";
                     },
                     style: buttonStyle,
 					          child: Text(AppLocalizations.of(context)!.load),
@@ -468,8 +467,8 @@ class _ConfigTabState extends State<ConfigTab> {
                       final expectRun = runTextController.text.isEmpty
 													? 0
 													: int.parse(runTextController.text);
-											await widget.device.changeRun(expectRun);
-                      if (widget.device.run != expectRun) {
+											await widget.service.changeRun(expectRun);
+                      if (widget.service.run != expectRun) {
                         final snackBar = SnackBar(
                           behavior: SnackBarBehavior.floating,
                           width: 800,
@@ -506,11 +505,11 @@ class ScalerTab extends StatefulWidget {
   const ScalerTab({
     super.key,
     this.restorationId,
-    required this.device,
+    required this.service,
   });
 
-  // device
-  final MztioDeviceModel device;
+  // service
+  final MztioServiceModel service;
 
   // restoration id
   final String? restorationId;
@@ -564,11 +563,11 @@ class _ScalerTabState extends State<ScalerTab> with RestorationMixin {
                         scalerMode = newSelection.first;
                       });
                       if (scalerMode == ScalerMode.modeLive) {
-                        widget.device.scalerMode = 0;
-                        widget.device.getLiveScaler();
+                        widget.service.scalerMode = 0;
+                        widget.service.getLiveScaler();
                       } else if (scalerMode == ScalerMode.modeHistory) {
-                        widget.device.scalerMode = 1;
-                        widget.device.getHistoryScaler(selectedDate.value);
+                        widget.service.scalerMode = 1;
+                        widget.service.getHistoryScaler(selectedDate.value);
                       }
                     },
                   ),
@@ -576,21 +575,21 @@ class _ScalerTabState extends State<ScalerTab> with RestorationMixin {
               ),
               scalerMode == ScalerMode.modeLive
                 ? LiveModeSelector(
-                  selectedMode: widget.device.scalerLiveMode,
-                  device: widget.device,
+                  selectedMode: widget.service.scalerLiveMode,
+                  service: widget.service,
                 )
                 : HistoryDateSelector(
                   restorationId: "history",
                   selectedDate: selectedDate,
-                  device: widget.device,
+                  service: widget.service,
                 ),
             ],
           ),
           ScalerChart(
-            device: widget.device,
+            service: widget.service,
           ),
           ScalerLiveText(
-            device: widget.device,
+            service: widget.service,
           ),
         ],
       ),
@@ -603,11 +602,11 @@ class LiveModeSelector extends StatefulWidget {
   const LiveModeSelector({
     super.key,
     required this.selectedMode,
-    required this.device,
+    required this.service,
   });
 
   final int selectedMode;
-  final MztioDeviceModel device;
+  final MztioServiceModel service;
 
   @override
   State<LiveModeSelector> createState() => _LiveModeSelectorState();
@@ -654,8 +653,8 @@ class _LiveModeSelectorState extends State<LiveModeSelector> {
           ScalerLiveMode.values.length,
           (int index) => MenuItemButton(
             onPressed: () {
-              widget.device.scalerLiveMode = index;
-              widget.device.getLiveScaler();
+              widget.service.scalerLiveMode = index;
+              widget.service.getLiveScaler();
               setState(() => selectedMode = index);
             },
             child: Text(localScalerLiveModeName[index]),
@@ -671,12 +670,12 @@ class HistoryDateSelector extends StatefulWidget {
     super.key,
     this.restorationId,
     required this.selectedDate,
-    required this.device,
+    required this.service,
   });
 
   final String? restorationId;
   final RestorableDateTime selectedDate;
-  final MztioDeviceModel device;
+  final MztioServiceModel service;
 
   @override
   State<HistoryDateSelector> createState() => _HistoryDateSelectorState();
@@ -730,7 +729,7 @@ class _HistoryDateSelectorState
     if (newSelectedDate != null) {
       setState(() {
         widget.selectedDate.value = newSelectedDate;
-        widget.device.getHistoryScaler(newSelectedDate);
+        widget.service.getHistoryScaler(newSelectedDate);
       });
     }
   }
@@ -762,10 +761,10 @@ class _HistoryDateSelectorState
 class ScalerChart extends StatelessWidget {
   const ScalerChart({
     super.key,
-    required this.device,
+    required this.service,
   });
 
-  final MztioDeviceModel device;
+  final MztioServiceModel service;
 
   List<LineChartBarData> scalerLineData(List<List<int>> scalers, List<bool> show) {
     List<LineChartBarData> result = [];
@@ -823,11 +822,11 @@ class ScalerChart extends StatelessWidget {
                   maxIncluded: true,
                   getTitlesWidget: (value, meta) {
                     late final String text;
-                    if (ScalerMode.values[device.scalerMode] == ScalerMode.modeLive) {
+                    if (ScalerMode.values[service.scalerMode] == ScalerMode.modeLive) {
                       final time = DateTime.now().add(Duration(
-                        seconds: (value.toInt() - 120) * scalerLiveModeAvg[device.scalerLiveMode]
+                        seconds: (value.toInt() - 120) * scalerLiveModeAvg[service.scalerLiveMode]
                       ));
-                      if (ScalerLiveMode.values[device.scalerLiveMode] == ScalerLiveMode.mode2m) {
+                      if (ScalerLiveMode.values[service.scalerLiveMode] == ScalerLiveMode.mode2m) {
                         text = "${time.hour}"
                           ":${time.minute.toString().padLeft(2, '0')}"
                           ":${time.second.toString().padLeft(2, '0')}";
@@ -848,8 +847,8 @@ class ScalerChart extends StatelessWidget {
               )
             ),
             lineBarsData: scalerLineData(
-              device.visualScaler,
-              device.visual
+              service.visualScaler,
+              service.visual
             ),
             minX: 0,
             minY: 0,
@@ -864,12 +863,12 @@ class ScalerChart extends StatelessWidget {
 class ScalerLiveText extends StatelessWidget {
   const ScalerLiveText({
     super.key,
-    required this.device,
+    required this.service,
   });
 
-  final MztioDeviceModel device;
+  final MztioServiceModel service;
 
-  List<SizedBox> buildText(context, name, value) {
+  List<SizedBox> buildText(BuildContext context, List<String> name, List<int> value) {
     List<SizedBox> result = [];
     for (var index = 0; index < name.length; ++index) {
       result.add(
@@ -877,26 +876,30 @@ class ScalerLiveText extends StatelessWidget {
           width: 120,
           child: TextButton(
             onPressed: () {
-              device.visual[index] = !device.visual[index];
-              device.getLiveScaler();
+              service.visual[index] = !service.visual[index];
+              service.getLiveScaler();
             },
-            iconAlignment: IconAlignment.start,
             style: TextButton.styleFrom(
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(0)),
               ),
               alignment: Alignment.centerLeft,
             ),
-            child: Text(
-              "${name[index]}: ${value[index]}",
-              style: device.visual[index]
-                ? Theme.of(context).textTheme.bodyLarge!.copyWith(
-                  color: defaultLineColors[index]
-                )
-                : Theme.of(context).textTheme.bodyLarge,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${name[index]}: ${value[index]}",
+                  style: service.visual[index]
+                    ? Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      color: defaultLineColors[index]
+                    )
+                    : Theme.of(context).textTheme.bodyLarge,
+                ),
+              ],
             ),
-          )
-        )
+          ),
+        ),
       );
     }
     return result;
@@ -907,7 +910,7 @@ class ScalerLiveText extends StatelessWidget {
     return Wrap(
       spacing: 20,
       runSpacing: 10,
-      children: buildText(context, device.scalerNames, device.scaler),
+      children: buildText(context, service.scalerNames, service.scaler),
     );
   }
 }

@@ -2,18 +2,18 @@ import 'dart:async';
 
 import 'package:grpc/grpc.dart';
 
-import 'package:rong_client/device/device.dart';
-import 'package:rong_client/generated/pixie16_rong.pbgrpc.dart';
+import 'service.dart';
+import '../generated/pixie16.pbgrpc.dart';
 
 
-class Pixie16DeviceModel extends DeviceModel {
-  Pixie16DeviceModel({
+class Pixie16ServiceModel extends ServiceModel {
+  Pixie16ServiceModel({
     required super.name,
-    required super.address,
+    required super.ip,
     required super.port,
-    super.type = DeviceType.pixie16,
-    required super.group,
+    super.type = ServiceType.pixie16,
     required super.index,
+    required super.saveCallback,
   }) {
     errorConnect = 0;
     init();
@@ -23,10 +23,35 @@ class Pixie16DeviceModel extends DeviceModel {
   late pixie16Client stub;
 
   @override
+  factory Pixie16ServiceModel.fromJson(
+    Map<String, dynamic> json,
+    Function saveCallback,
+  ) {
+    return Pixie16ServiceModel(
+      name: json["name"],
+      ip: json["ip"],
+      port: json["port"],
+      index: json["index"],
+      saveCallback: saveCallback
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "name": name,
+      "type": serviceTypeName[ServiceType.pixie16],
+      "ip": ip,
+      "port": port,
+      "index": index,
+    };
+  }
+
+  @override
   Future<void> init() async {
     stub = pixie16Client(
       ClientChannel(
-        address,
+        ip,
         port: int.parse(port),
         options: const ChannelOptions(
           credentials: ChannelCredentials.insecure(),

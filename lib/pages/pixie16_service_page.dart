@@ -1,32 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
+import '../service/pixie16_service.dart';
 
-import 'package:rong_client/device/pixie16_device.dart';
-
-class Pixie16DevicePage extends StatefulWidget {
-  const Pixie16DevicePage({
+class Pixie16ServicePage extends StatefulWidget {
+  const Pixie16ServicePage({
     super.key,
     required this.changePage,
-    required this.device,
+    required this.service,
   });
 
   final Function changePage;
-  final Pixie16DeviceModel device;
+  final Pixie16ServiceModel service;
 
   @override
-  State<Pixie16DevicePage> createState() => _Pixie16DevicePageState();
+  State<Pixie16ServicePage> createState() => _Pixie16ServicePageState();
 }
 
-class _Pixie16DevicePageState extends State<Pixie16DevicePage> {
+class _Pixie16ServicePageState extends State<Pixie16ServicePage> {
   late final TextEditingController runTextController;
 
   @override
   void initState() {
     super.initState();
     runTextController = TextEditingController(
-      text: "${widget.device.run}",
+      text: "${widget.service.run}",
     );
   }
 
@@ -52,9 +51,9 @@ class _Pixie16DevicePageState extends State<Pixie16DevicePage> {
               margin:  const EdgeInsetsDirectional.symmetric(
                 horizontal: 10,
               ),
-              child: Text(widget.device.name),
+              child: Text(widget.service.name),
             ),
-            Text("${widget.device.address}:${widget.device.port}"),
+            Text("${widget.service.ip}:${widget.service.port}"),
           ],
         ),
       ),
@@ -85,8 +84,8 @@ class _Pixie16DevicePageState extends State<Pixie16DevicePage> {
             ),
             OutlinedButton(
               onPressed: () async {
-                await widget.device.loadRun();
-                runTextController.text = "${widget.device.run}";
+                await widget.service.loadRun();
+                runTextController.text = "${widget.service.run}";
               },
               style: buttonStyle,
               child: Text(AppLocalizations.of(context)!.load),
@@ -103,8 +102,8 @@ class _Pixie16DevicePageState extends State<Pixie16DevicePage> {
                 final expectRun = runTextController.text.isEmpty
                     ? 0
                     : int.parse(runTextController.text);
-                await widget.device.changeRun(expectRun);
-                if (widget.device.run != expectRun) {
+                await widget.service.changeRun(expectRun);
+                if (widget.service.run != expectRun) {
                   final snackBar = SnackBar(
                     behavior: SnackBarBehavior.floating,
                     width: 800,

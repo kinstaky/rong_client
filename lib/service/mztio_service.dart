@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:grpc/grpc.dart';
-import 'package:path_provider/path_provider.dart';
 
-import 'package:rong_client/device/device.dart';
-import 'package:rong_client/generated/ecl_rong.pbgrpc.dart';
+import 'service.dart';
+import '../generated/ecl.pbgrpc.dart';
 
 
 const int scalerNum = 32;
@@ -78,15 +76,36 @@ class ParseResult {
   int length = 0;
 }
 
-class MztioDeviceModel extends DeviceModel {
-  MztioDeviceModel({
+class MztioServiceModel extends ServiceModel {
+  // stub
+  late eclClient stub;
+  // scaler mode
+  int scalerMode = 0;
+  // scaler live mode
+  int scalerLiveMode = 0;
+  // current scaler value
+  List<int> scaler = [];
+  // scaler names
+  List<String> scalerNames = [];
+  // visual scaler
+  List<bool> visual = [];
+  // visual scaler data
+  List<List<int>> visualScaler = [];
+  // calculated scaler value
+  int avgNumber = 0;
+  // config file name
+  DateTime configTime = DateTime.now();
+  // config expressions
+  List<String> expressions = [];
+
+  MztioServiceModel({
     required super.name,
-    required super.address,
+    required super.ip,
     required super.port,
-    super.type = DeviceType.mztio,
-    required super.group,
+    super.type = ServiceType.mztio,
     required super.index,
-    this.scalerNames
+    required super.saveCallback,
+    required this.scalerNames,
   }) {
     errorConnect = 0;
     scalerMode = 0;
@@ -99,43 +118,14 @@ class MztioDeviceModel extends DeviceModel {
         visualScaler[i].add(0);
       }
     }
-    if (scalerNames == null) {
-      scalerNames = [];
-      for (var i = 0; i < scalerNum; ++i) {
-        scalerNames!.add("$i");
-      }
-    }
     init();
   }
-
-
-  // stub
-  late eclClient stub;
-  // scaler mode
-  int scalerMode = 0;
-  // scaler live mode
-  int scalerLiveMode = 0;
-  // current scaler value
-  List<int> scaler = [];
-  // scaler names
-  List<String>? scalerNames = [];
-  // visual scaler
-  List<bool> visual = [];
-  // visual scaler data
-  List<List<int>> visualScaler = [];
-  // calculated scaler value
-  int avgNumber = 0;
-  // config file name
-  DateTime configTime = DateTime.now();
-  // config expressions
-  List<String> expressions = [];
-
 
   @override
   Future<void> init() async {
     stub = eclClient(
       ClientChannel(
-        address,
+        ip,
         port: int.parse(port),
         options: const ChannelOptions(
           credentials: ChannelCredentials.insecure(),
@@ -144,8 +134,36 @@ class MztioDeviceModel extends DeviceModel {
       ),
     );
     await getConfig();
-    await loadScalerNames();
 		await loadRun();
+  }
+
+  @override
+  factory MztioServiceModel.fromJson(
+    Map<String, dynamic> json,
+    Function saveCallback,
+  ) {
+    return MztioServiceModel(
+      name: json["name"],
+      ip: json["ip"],
+      port: json["port"],
+      index: json["index"] as int,
+      scalerNames: (json["scalerNames"] as List).map(
+        (e) => e.toString()
+      ).toList(),
+      saveCallback: saveCallback,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "name": name,
+      "type": serviceTypeName[ServiceType.mztio],
+      "ip": ip,
+      "port": port,
+      "index": index,
+      "scalerNames": scalerNames,
+    };
   }
 
   @override
@@ -164,25 +182,7 @@ class MztioDeviceModel extends DeviceModel {
   }
 
   Future<void> saveScalerNames() async {
-    // create and open file
-    final directory = await getApplicationDocumentsDirectory();
-    final path = directory.path;
-    final file = File(
-      "$path/.rong/config/mztio/"
-      "mztio_${name}_${address}_${port}_scaler.json"
-    );
-    await file.create(recursive: true);
-    await file.writeAsString(
-      JsonEncoder.withIndent('  ').convert(
-        scalerNames
-      )
-    );
-
-    if (scalerNames == null) return;
-    final logFile = File(
-      "$path/.rong/mztio/scaler_names/"
-      "mztio_${name}_${address}_${port}_log.txt"
-    );
+    final logFile = File(await logFileName());
     String content = "";
     if (!logFile.existsSync()) {
       // file not exists, create title
@@ -200,32 +200,10 @@ class MztioDeviceModel extends DeviceModel {
     content += "${Platform.lineTerminator}"
       "${currentTime.year},${currentTime.month},${currentTime.day},"
       "${currentTime.hour},${currentTime.minute},${currentTime.second}";
-    for (var i = 0; i < scalerNames!.length; ++i) {
-      content += ",${scalerNames![i]}";
+    for (var i = 0; i < scalerNames.length; ++i) {
+      content += ",${scalerNames[i]}";
     }
     await logFile.writeAsString(content);
-  }
-
-  Future<void> loadScalerNames() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final path = directory.path;
-    final file = File(
-      "$path/.rong/config/mztio/"
-      "mztio_${name}_${address}_${port}_scaler.json"
-    );
-    if (!file.existsSync()) {
-      scalerNames = [];
-      for (var i = 0; i < scalerNum; ++i) {
-        scalerNames!.add("$i");
-      }
-    } else {
-      String content = await file.readAsString();
-      final names = jsonDecode(content) as List<dynamic>;
-      scalerNames = [];
-      for (var name in names) {
-        scalerNames!.add(name as String);
-      }
-    }
   }
 
   Future<void> refreshScaler() async {

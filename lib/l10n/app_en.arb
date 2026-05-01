@@ -1,17 +1,17 @@
 {
 	"@@locale": "en",
 
-	"addDeviceTooltip": "Add new device",
-	"@addDeviceTooltip": {
-		"description": "Tooltip for adding new device."
+	"addServiceTooltip": "Add new service",
+	"@addServiceTooltip": {
+		"description": "Tooltip for adding new service."
 	},
 	"refreshTooltip": "Refresh",
 	"@refreshTooltip": {
-		"description": "Tooltip for refreshing device state."
+		"description": "Tooltip for refreshing service state."
 	},
-	"editDeviceTooltip": "Edit",
-	"@editDeviceTooltip": {
-		"description": "Tooltip for editing device settings."
+	"editServiceTooltip": "Edit",
+	"@editServiceTooltip": {
+		"description": "Tooltip for editing service settings."
 	},
 	"delete": "Delete",
 	"@delete": {
@@ -26,17 +26,17 @@
 		"description": "Action for stopping current run."
 	},
 
-	"newDeviceTitle": "New device",
-	"@newDeviceTitle": {
-		"description": "Title for adding new device page."
+	"newServiceTitle": "New service",
+	"@newServiceTitle": {
+		"description": "Title for adding new service page."
 	},
-	"editDeviceTitle": "Edit device",
-	"@editDeviceTitle": {
-		"description": "Title for editing existing device page."
+	"editServiceTitle": "Edit service",
+	"@editServiceTitle": {
+		"description": "Title for editing existing service page."
 	},
-	"deviceType": "Device type",
-	"@deviceType": {
-		"description": "Tag to identify different kind of device."
+	"serviceType": "Service type",
+	"@serviceType": {
+		"description": "Tag to identify different kind of service."
 	},
 	"name": "Name",
 	"@name": {
@@ -50,17 +50,17 @@
 	"@port": {
 		"description": "Port in network, related to IP."
 	},
-	"deviceInputHintPrefix": "Enter device ",
-	"@deviceInputHintPrefix": {
-		"description": "Prefix of hints in inputting device properties."
+	"serviceInputHintPrefix": "Enter service ",
+	"@serviceInputHintPrefix": {
+		"description": "Prefix of hints in inputting service properties."
 	},
 	"save": "save",
 	"@save": {
 		"description": "Action to apply and store changes."
 	},
-	"deleteDeviceTitle": "Delete device?",
-	"@deleteDeviceTitle": {
-		"description": "Alert dialog title for confirming remove device from list."
+	"deleteServiceTitle": "Delete service?",
+	"@deleteServiceTitle": {
+		"description": "Alert dialog title for confirming remove service from list."
 	},
 	"cancel": "Cancel",
 	"@cancel": {
@@ -73,7 +73,7 @@
 	},
 	"config": "config",
 	"@config": {
-		"description": "Title of tab for config device."
+		"description": "Title of tab for config service."
 	},
 	"scalerNames": "scaler names",
 	"@scalerNames": {
