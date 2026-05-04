@@ -1,3 +1,4 @@
+import 'package:easy_daq_client/manager/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,15 @@ class Client extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => manager),
         ChangeNotifierProvider(create: (context) => manager.settings),
+        ChangeNotifierProxyProvider(
+          create: (context) {
+            final appManager = context.read<AppManager>();
+            return appManager.profiles[manager.currentProfile];
+          },
+          update: (BuildContext context, AppManager appManager, previous) {
+            return appManager.profiles[manager.currentProfile];
+          }
+        ),
       ],
       builder: (context, child) {
         return MaterialApp(
@@ -88,9 +98,8 @@ class _ClientPageState extends State<ClientPage> {
         );
         break;
       case 1:
-        var manager = context.watch<AppManager>();
-        var profile = manager.profiles[manager.currentProfile];
-        var service = profile.services[profile.selectedService];
+        final profile = context.watch<ProfileModel>();
+        final service = profile.services[profile.selectedService];
         if (service == null) {
           page = const Scaffold();
         } else if (service.type == ServiceType.mztio) {

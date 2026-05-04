@@ -1,8 +1,7 @@
-import 'package:easy_daq_client/manager/app_manager.dart';
+import 'package:easy_daq_client/manager/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
-import '../manager/profile.dart';
 import '../service/service.dart';
 import 'edit_service_page.dart';
 
@@ -24,13 +23,13 @@ Future<void> navigateEditServicePage(
   if (newService == null) return;
 
   // read service map
-  var serviceManager = context.read<ProfileModel>();
+  final profile = context.read<ProfileModel>();
 
   // add service
   if (service == null) {
-    serviceManager.addService(newService);
+    profile.addService(newService);
   } else {
-    serviceManager.editService(newService);
+    profile.editService(newService);
   }
 }
 
@@ -45,8 +44,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var manager = context.watch<AppManager>();
-    var profile = manager.profiles[manager.currentProfile];
+    final profile = context.watch<ProfileModel>();
 
     return Stack(
       alignment: Alignment.bottomRight,
@@ -137,8 +135,7 @@ class ServiceEntry extends StatelessWidget {
       )
     );
     if (result != null && result && context.mounted) {
-      var manager = context.read<AppManager>();
-      var profile = manager.profiles[manager.currentProfile];
+      final profile = context.read<ProfileModel>();
       profile.deleteService(service.name);
     }
   }
@@ -231,8 +228,7 @@ class ServiceEntry extends StatelessWidget {
         ],
       ),
       onTap: () {
-        var manager = context.read<AppManager>();
-        var profile = manager.profiles[manager.currentProfile];
+        final profile = context.read<ProfileModel>();
         profile.selectedService = service.name;
         changePage(1);
       },
