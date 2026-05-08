@@ -1,9 +1,9 @@
 name: easy_daq_client
-description: Client for rong.
+description: Client for easy daq.
 publish_to: none
 version: 1.0.0
-homepage: https://github.com/kinstaky/rong_client
-documentation: https://kinstaky.github.io/rong_client
+homepage: https://github.com/kinstaky/easy_daq_client
+documentation: https://kinstaky.github.io/easy_daq_client
 
 environment:
   sdk: ^3.1.1

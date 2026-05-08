@@ -1,6 +1,6 @@
 {
-    "name": "rong_client",
-    "short_name": "rong_client",
+    "name": "easy_daq_client",
+    "short_name": "easy_daq_client",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

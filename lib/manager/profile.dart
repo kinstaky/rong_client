@@ -15,7 +15,8 @@ class ProfileModel extends ChangeNotifier {
   // save callback from app manager
   Function saveCallback;
   // running state
-  bool running = false;
+  bool allRunning = false;
+  bool allStopeed = false;
 
   ProfileModel({
     required this.name,
@@ -56,10 +57,17 @@ class ProfileModel extends ChangeNotifier {
     };
   }
 
+  void refreshRunning() {
+    allRunning = services.values.every((service) => service.state == 0 || service.state == 2);
+    allStopeed = services.values.every((service) => service.state == 0 || service.state == 3);
+  }
+
   Future<void> init() async {
     for (var service in services.values) {
       await service.init();
     }
+
+    refreshRunning();
 
     Timer.periodic(
       const Duration(seconds: 1),
@@ -79,6 +87,7 @@ class ProfileModel extends ChangeNotifier {
         await service.refreshState();
       }
     }
+    refreshRunning();
     notifyListeners();
   }
 
@@ -104,6 +113,7 @@ class ProfileModel extends ChangeNotifier {
         saveCallback: saveCallback,
       );
     }
+    refreshRunning();
     saveCallback();
   }
 
@@ -118,6 +128,7 @@ class ProfileModel extends ChangeNotifier {
         service.index -= 1;
       }
     }
+    refreshRunning();
     saveCallback();
   }
 
@@ -146,6 +157,7 @@ class ProfileModel extends ChangeNotifier {
     }
     // insert new one
     services[service["name"]]!.init();
+    refreshRunning();
     saveCallback();
   }
 
@@ -171,17 +183,22 @@ class ProfileModel extends ChangeNotifier {
   }
 
   Future<void> startRun() async {
-    for (var service in services.values) {
-      if (running) {
-        print("Running, state ${service.state}");
+    if (allRunning && allStopeed) return;
+    if (!allRunning && !allStopeed) return;
+    List<Future> futures = [];
+    if (allRunning) {
+      for (var service in services.values) {
+        print("${service.name}'s state is ${service.state}");
         if (service.state != 2) continue;
-      } else {
-        print("Idle, state ${service.state}");
-        if (service.state != 3) continue;
+        futures.add(service.startRun());
       }
-      await service.startRun();
-      print("State ${service.state}");
-      running = !running;
+    } else {
+      for (var service in services.values) {
+        print("${service.name}'s state is ${service.state}");
+        if (service.state != 3) continue;
+        futures.add(service.startRun());
+      }
     }
+    await Future.wait(futures);
   }
 }

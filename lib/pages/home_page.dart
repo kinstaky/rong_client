@@ -49,40 +49,15 @@ class HomePage extends StatelessWidget {
     return Stack(
       alignment: Alignment.bottomRight,
       children: <Widget>[
-        Card(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: FilledButton(
-                  onPressed: () async {
-                    await profile.startRun();
-                    profile.notifyManual();
-                  },
-                  style: FilledButton.styleFrom(
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(10),
-                      )
-                    ),
-                    foregroundColor: Theme.of(context).colorScheme.onSecondary,
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                  ),
-                  child: Text(
-                    profile.running
-                      ? AppLocalizations.of(context)!.stopRun
-                      : AppLocalizations.of(context)!.startNewRun,
-                  ),
-                ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var service in profile.services.values)
+              ServiceEntry(
+                changePage: changePage,
+                service: service
               ),
-              for (var service in profile.services.values)
-                ServiceEntry(
-                  changePage: changePage,
-                  service: service
-                ),
-            ],
-          ),
+          ],
         ),
         Padding(
           padding: const EdgeInsets.all(20.0),
@@ -92,6 +67,47 @@ class HomePage extends StatelessWidget {
             child: const Icon(Icons.add),
           ),
         ),
+        Positioned(
+          left: 16,
+          bottom: 16,
+          child: Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: SizedBox(
+              width: 200,
+              height: 60,
+              child: FloatingActionButton(
+                onPressed: (profile.allRunning != profile.allStopeed)
+                  ? () async {
+                    await profile.startRun();
+                    profile.notifyManual();
+                  }
+                  : null,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(10),
+                  ),
+                ),
+                foregroundColor: (profile.allRunning != profile.allStopeed)
+                  ? Theme.of(context).colorScheme.onSecondary
+                  : Theme.of(context).colorScheme.onSecondary.withAlpha(100),
+                backgroundColor: (profile.allRunning != profile.allStopeed)
+                  ? Theme.of(context).colorScheme.secondary
+                  : Theme.of(context).colorScheme.secondary.withAlpha(100),
+                tooltip: (profile.allRunning != profile.allStopeed)
+                  ? profile.allRunning
+                    ? AppLocalizations.of(context)!.stopRun
+                    : AppLocalizations.of(context)!.startNewRun
+                  : "",
+                child: Text(
+                  profile.allRunning
+                    ? AppLocalizations.of(context)!.stopRun
+                    : AppLocalizations.of(context)!.startNewRun,
+                  style: TextStyle(fontSize: 24),
+                ),
+              ),
+            ),
+          ),
+        )
       ],
     );
   }
@@ -137,6 +153,41 @@ class ServiceEntry extends StatelessWidget {
     if (result != null && result && context.mounted) {
       final profile = context.read<ProfileModel>();
       profile.deleteService(service.name);
+    }
+  }
+
+  Future<void> confirmStartRunServiceDialog(BuildContext context, ServiceModel service) async {
+    bool? result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          service.state == 2
+          ? AppLocalizations.of(context)!.stopRun
+          : AppLocalizations.of(context)!.startNewRun,
+          style: Theme.of(context).textTheme.headlineMedium!,
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.titleLarge,
+            ),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.titleLarge,
+            ),
+            child: service.state == 2
+              ? Text(AppLocalizations.of(context)!.stopRun)
+              : Text(AppLocalizations.of(context)!.startNewRun),
+          ),
+        ],
+      )
+    );
+    if (result != null && result && context.mounted) {
+      service.startRun();
     }
   }
 
@@ -206,6 +257,14 @@ class ServiceEntry extends StatelessWidget {
             }
           ),
           IconButton(
+            onPressed: () => confirmStartRunServiceDialog(context, service),
+            iconSize: 36,
+            icon: service.state == 2 ? Icon(Icons.stop) : Icon(Icons.play_arrow),
+            tooltip: service.state == 2
+              ? AppLocalizations.of(context)!.stopRun
+              : AppLocalizations.of(context)!.startNewRun
+          ),
+          IconButton(
             icon: const Icon(Icons.edit),
             iconSize: 36,
             tooltip: AppLocalizations.of(context)!.editServiceTooltip,
@@ -236,58 +295,3 @@ class ServiceEntry extends StatelessWidget {
     );
   }
 }
-
-// class GroupSelector extends StatelessWidget {
-//   const GroupSelector({
-//     super.key,
-//     required this.service,
-//   });
-
-//   final ServiceModel service;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MenuAnchor(
-//       builder: (context, controller, child) {
-//         return OutlinedButton(
-//           onPressed: (){
-//             if (controller.isOpen) {
-//               controller.close();
-//             } else {
-//               controller.open();
-//             }
-//           },
-//           style: OutlinedButton.styleFrom(
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(5),
-//             ),
-//           ),
-//           child: Text("Group ${service.group}"),
-//         );
-//       },
-//       menuChildren: [
-//         for (
-//           var i = 0;
-//           i < context.read<ServiceManagerModel>().groups.length;
-//           ++i
-//         )
-//           MenuItemButton(
-//             onPressed: () {
-//               var serviceManager = context.read<ServiceManagerModel>();
-//               serviceManager.changeServiceGroup(service.name, i);
-//               serviceManager.notifyManual();
-//             },
-//             child: Text("Group $i"),
-//           ),
-//         MenuItemButton(
-//           onPressed: () {
-//             var serviceManager = context.read<ServiceManagerModel>();
-//             serviceManager.changeServiceGroup(service.name, -1);
-//             serviceManager.notifyManual();
-//           },
-//           child: Text("New Group"),
-//         )
-//       ],
-//     );
-//   }
-// }

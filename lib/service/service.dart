@@ -63,8 +63,6 @@ abstract class ServiceModel {
   int errorConnect = 0;
   // run
   int run = 0;
-  // run status
-  bool running = false;
 
   Future<void> init();
 
@@ -77,7 +75,7 @@ abstract class ServiceModel {
   Future<void> loadRun() async {}
 
   Future<void> startRun() async {
-    running = !running;
+    state = state == 0 ? 0 : (state == 2 ? 3 : 2);
   }
 
   Future<String> logFileName() async {

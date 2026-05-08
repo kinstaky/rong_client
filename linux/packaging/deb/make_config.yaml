@@ -1,5 +1,5 @@
-display_name: Rong Client
-package_name: rong-client
+display_name: Easy DAQ Client
+package_name: eass-daq-client
 
 maintainer:
   name: kinstaky
@@ -10,7 +10,7 @@ section: x11
 installed_size: 24576
 
 essential: false
-generic_name: Rong Application
+generic_name: EasyDaqClient Application
 startup_notify: false
 # icon:
 # metainfo:

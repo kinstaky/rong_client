@@ -109,7 +109,7 @@ class Pixie16ServiceModel extends ServiceModel {
       final Action action = Action(type: 1);
       final reply = await stub.runControl(action);
       state = reply.status == 0 ? 3 : 2;
-      await loadRun();
+      run = reply.run;
     } catch (e) {
       print("Caught error: $e");
     }
