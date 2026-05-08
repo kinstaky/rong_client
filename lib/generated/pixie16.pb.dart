@@ -1,6 +1,6 @@
 // This is a generated file - do not edit.
 //
-// Generated from pixie16.proto.
+// Generated from proto/pixie16.proto.
 
 // @dart = 3.3
 
@@ -149,9 +149,11 @@ class Action extends $pb.GeneratedMessage {
 class Reply extends $pb.GeneratedMessage {
   factory Reply({
     $core.int? status,
+    $core.int? run,
   }) {
     final result = create();
     if (status != null) result.status = status;
+    if (run != null) result.run = run;
     return result;
   }
 
@@ -169,6 +171,7 @@ class Reply extends $pb.GeneratedMessage {
       package: const $pb.PackageName(_omitMessageNames ? '' : 'easydaq'),
       createEmptyInstance: create)
     ..aI(1, _omitFieldNames ? '' : 'status')
+    ..aI(2, _omitFieldNames ? '' : 'run')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -197,6 +200,15 @@ class Reply extends $pb.GeneratedMessage {
   $core.bool hasStatus() => $_has(0);
   @$pb.TagNumber(1)
   void clearStatus() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get run => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set run($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRun() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRun() => $_clearField(2);
 }
 
 const $core.bool _omitFieldNames =

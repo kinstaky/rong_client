@@ -1,6 +1,6 @@
 // This is a generated file - do not edit.
 //
-// Generated from pixie16.proto.
+// Generated from proto/pixie16.proto.
 
 // @dart = 3.3
 
@@ -47,9 +47,10 @@ const Reply$json = {
   '1': 'Reply',
   '2': [
     {'1': 'status', '3': 1, '4': 1, '5': 5, '10': 'status'},
+    {'1': 'run', '3': 2, '4': 1, '5': 5, '10': 'run'},
   ],
 };
 
 /// Descriptor for `Reply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List replyDescriptor =
-    $convert.base64Decode('CgVSZXBseRIWCgZzdGF0dXMYASABKAVSBnN0YXR1cw==');
+final $typed_data.Uint8List replyDescriptor = $convert.base64Decode(
+    'CgVSZXBseRIWCgZzdGF0dXMYASABKAVSBnN0YXR1cxIQCgNydW4YAiABKAVSA3J1bg==');

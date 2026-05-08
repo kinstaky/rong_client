@@ -68,6 +68,7 @@ class Pixie16ServiceModel extends ServiceModel {
       final Request request = Request(type: 0);
       final response = await stub.getState(request);
       state = response.status;
+      run = response.run;
       errorConnect = 0;
     } catch (e) {
       ++errorConnect;
@@ -87,7 +88,7 @@ class Pixie16ServiceModel extends ServiceModel {
         run = newRun;
       }
     } catch (e) {
-      // print("Caught error: $e");
+      print("Caught error: $e");
     }
   }
 
@@ -96,9 +97,9 @@ class Pixie16ServiceModel extends ServiceModel {
     try {
       final Action action = Action(type: 0);
       final reply = await stub.runControl(action);
-      run = reply.status;
+      run = reply.run;
     } catch (e) {
-      // print("Caught error: $e");
+      print("Caught error: $e");
     }
   }
 
@@ -110,7 +111,7 @@ class Pixie16ServiceModel extends ServiceModel {
       state = reply.status == 0 ? 3 : 2;
       await loadRun();
     } catch (e) {
-      // print("Caught error: $e");
+      print("Caught error: $e");
     }
   }
 

@@ -1,6 +1,6 @@
 // This is a generated file - do not edit.
 //
-// Generated from pixie16.proto.
+// Generated from proto/pixie16.proto.
 
 // @dart = 3.3
 
